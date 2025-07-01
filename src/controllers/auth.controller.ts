@@ -3,7 +3,7 @@ import { env } from "../config/env";
 import jwt from "jsonwebtoken";
 
 import { APIResponse, logger, hashPassword, verifyPassword } from "../utils";
-import { userModel } from "../models";
+import { usersModel } from "../models";
 
 import { userRegisterValidation } from "../validations";
 import { z } from "zod";
@@ -16,7 +16,7 @@ export const authController = {
             logger.info("[AUTH] Login") // Log d'information en couleur
 
             const { email, password } = request.body;
-            const [ user ] = await userModel.findByCredentials(email);
+            const [ user ] = await usersModel.findByCredentials(email);
             if (!user) {
                 return APIResponse(response, null, "Les identifiants saisis sont incorrects", 400);
             }
@@ -47,7 +47,7 @@ export const authController = {
             const { name, email, password } = userRegisterValidation.parse(request.body);
 
             // on vérifie qu'un user n'a pas déjà cet adresse email
-            const [ emailAlreadyExists ] = await userModel.findByCredentials(email);
+            const [ emailAlreadyExists ] = await usersModel.findByCredentials(email);
             if (emailAlreadyExists) {
                 logger.error("Cette adresse email est déjà utilisée")
                 return APIResponse(response, null, "Cette adresse email est déjà utilisée", 400);
@@ -61,7 +61,7 @@ export const authController = {
             }
 
             // On ajoute le new user dans la db avec le mdp hashé
-            const [ newUser ] = await userModel.create({ name, email, password: hash })
+            const [ newUser ] = await usersModel.create({ name, email, password: hash })
             if (!newUser) {
                 logger.error("Un problème est survenu lors de la création");
                 return APIResponse(response, null, "Un problème est survenu lors de la création", 500);

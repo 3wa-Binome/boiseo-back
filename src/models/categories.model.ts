@@ -40,25 +40,17 @@ export const categoriesModel = {
             return [];
         }
     },
-    create: async (categorie: NewCategory) => {
+    create: async (category: NewCategory) => {
         try {
-            const {
-                name,
-                userId,
-            } = categorie;
-
-            return await db.insert(categories).values({
-                name,
-                userId,
-            });
+            return await db.insert(categories).values(category);
         } catch (error: any) {
             logger.error("Erreur lors de la création du categorie: ", error);
             throw new Error("Impossible de créer le categorie");
         }
     },
-    update: async (id: string, categorie: Partial<NewCategory>) => {
+    update: async (id: string, category: Partial<NewCategory>) => {
         try {
-            return await db.update(categories).set(categorie).where(
+            return await db.update(categories).set(category).where(
                 eq(categories.id, id),
             );
         } catch (error: any) {

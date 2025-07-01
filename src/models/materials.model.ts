@@ -66,19 +66,7 @@ export const materialsModel = {
     },
     create: async (material: NewMaterial) => {
         try {
-            const {
-                name,
-                description,
-                userId,
-                supplierId,
-            } = material;
-
-            return await db.insert(materials).values({
-                name,
-                description,
-                userId,
-                supplierId,
-            });
+            return await db.insert(materials).values(material);
         } catch (error: any) {
             logger.error("Erreur lors de la création du material: ", error);
             throw new Error("Impossible de créer le material");

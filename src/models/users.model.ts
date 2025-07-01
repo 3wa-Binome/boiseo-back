@@ -83,17 +83,7 @@ export const usersModel = {
     },
     create: async (user: NewUser) => {
         try {
-            const {
-                name,
-                email,
-                password,
-            } = user;
-
-            return await db.insert(users).values({
-                name,
-                email,
-                password,
-            })
+            return await db.insert(users).values(user)
         } catch (error: any) {
             logger.error("Erreur lors de la création de l'utilisateur: ", error);
             throw new Error("Impossible de créer l'utilisateur");

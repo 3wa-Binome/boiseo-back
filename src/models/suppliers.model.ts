@@ -51,17 +51,8 @@ export const suppliersModel = {
     },
     create: async (supplier: NewSupplier) => {
         try {
-            const {
-                name,
-                description,
-                userId,
-            } = supplier;
 
-            return await db.insert(suppliers).values({
-                name,
-                description,
-                userId,
-            });
+            return await db.insert(suppliers).values(supplier);
         } catch (error: any) {
             logger.error("Erreur lors de la création du supplier: ", error);
             throw new Error("Impossible de créer le supplier");

@@ -120,17 +120,6 @@ export const materialsController = {
 
             await materialsModel.delete(id);
 
-            // Si l'utilisateur N'EST PAS admin, il doit être déconnecté
-            if (!response.locals.material.isAdmin) {
-                response.clearCookie("accessToken");
-                return APIResponse(
-                    response,
-                    null,
-                    "Utilisateur supprimé et déconnecté",
-                    200,
-                );
-            }
-
             return APIResponse(response, null, "Utilisateur supprimé", 200);
         } catch (error: any) {
             logger.error(

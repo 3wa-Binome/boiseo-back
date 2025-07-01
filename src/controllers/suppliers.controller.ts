@@ -120,17 +120,6 @@ export const suppliersController = {
 
             await suppliersModel.delete(id);
 
-            // Si l'utilisateur N'EST PAS admin, il doit être déconnecté
-            if (!response.locals.supplier.isAdmin) {
-                response.clearCookie("accessToken");
-                return APIResponse(
-                    response,
-                    null,
-                    "Utilisateur supprimé et déconnecté",
-                    200,
-                );
-            }
-
             return APIResponse(response, null, "Utilisateur supprimé", 200);
         } catch (error: any) {
             logger.error(

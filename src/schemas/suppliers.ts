@@ -10,5 +10,5 @@ export const suppliers = mysqlTable("suppliers", {
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description").notNull(),
     createdAt: timestamp("created_at").defaultNow(),
-    userId: varchar("id", { length: 36 }).references(() => users.id, { onDelete: "cascade"}).notNull(),
+    userId: varchar("id_users", { length: 36 }).references(() => users.id, { onDelete: "cascade"}).notNull(),
 });

@@ -11,6 +11,6 @@ export const materials = mysqlTable("materials", {
     name: varchar("name", { length: 255 }).notNull(),
     description: text("description").notNull(),
     createdAt: timestamp("created_at").defaultNow(),
-    supplierId: varchar("id", { length: 36 }).references(() => suppliers.id, { onDelete: "cascade"}).notNull(),
-    userId: varchar("id", { length: 36 }).references(() => users.id, { onDelete: "cascade"}).notNull(),
+    supplierId: varchar("id_suppliers", { length: 36 }).references(() => suppliers.id, { onDelete: "cascade"}).notNull(),
+    userId: varchar("id_users", { length: 36 }).references(() => users.id, { onDelete: "cascade"}).notNull(),
 });
