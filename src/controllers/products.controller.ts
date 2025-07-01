@@ -108,13 +108,18 @@ export const productsController = {
         try {
             logger.info("[POST] Créer un product"); // Log d'information en couleur
 
-            const productData = productsValidation.parse(request.body);
+            const { name, description, categoryId, materials } = productsValidation.parse(request.body);
             const { user } = response.locals;
 
             const product = await productsModel.create({
                 userId: user.id,
-                ...productData,
+                name,
+                description,
+                categoryId
             });
+
+            await productsModel.linkMaterials(product.id, materials)
+
             APIResponse(response, product, "OK", 201);
         } catch (error: any) {
             logger.error("Erreur lors de la création du product: ", error);
@@ -146,9 +151,12 @@ export const productsController = {
                 return APIResponse(response, null, "Product inexistant", 404);
             }
 
-            const productData = productsValidation.parse(request.body);
+            const { name, description, categoryId, materials } = productsValidation.parse(request.body);
 
-            await productsModel.update(id, productData);
+            await productsModel.update(id, {name, description, categoryId});
+
+            await productsModel.linkMaterials(id, materials)
+
             APIResponse(response, null, "OK", 201);
         } catch (error: any) {
             logger.error("Erreur lors de la màj du product: ", error);
@@ -176,7 +184,7 @@ export const productsController = {
                 `[UPDATE] Modifier la quantity du product avec l'id: ${id}`,
             );
 
-            if (action !== "remove" && action !== "add" ) {
+            if (action !== "remove" && action !== "add") {
                 logger.error("Action incorrecte");
                 return APIResponse(response, null, "Action incorrecte", 400);
             }

@@ -2,7 +2,9 @@ import { db } from "../config/pool";
 import { logger } from "../utils";
 import { materials, products } from "../schemas";
 import { NewProduct } from "../entities";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
+import { IMaterial } from "../types/materials.type";
+import { productsMaterials } from "../schemas/productsMaterials";
 
 export const productsModel = {
     getAll: async () => {
@@ -12,8 +14,8 @@ export const productsModel = {
                     categories: {
                         columns: {
                             id: true,
-                            name: true
-                        }
+                            name: true,
+                        },
                     },
                 },
             });
@@ -33,8 +35,8 @@ export const productsModel = {
                     categories: {
                         columns: {
                             id: true,
-                            name: true
-                        }
+                            name: true,
+                        },
                     },
                 },
             });
@@ -51,8 +53,8 @@ export const productsModel = {
                     categories: {
                         columns: {
                             id: true,
-                            name: true
-                        }
+                            name: true,
+                        },
                     },
                 },
             });
@@ -72,8 +74,8 @@ export const productsModel = {
                     categories: {
                         columns: {
                             id: true,
-                            name: true
-                        }
+                            name: true,
+                        },
                     },
                 },
             });
@@ -87,7 +89,8 @@ export const productsModel = {
     },
     create: async (product: NewProduct) => {
         try {
-            return await db.insert(products).values(product);
+            const [result] = await db.insert(products).values(product).$returningId();
+            return result
         } catch (error: any) {
             logger.error("Erreur lors de la création du product: ", error);
             throw new Error("Impossible de créer le product");
@@ -109,6 +112,38 @@ export const productsModel = {
         } catch (error: any) {
             logger.error("Erreur lors de la suppression du product: ", error);
             throw new Error("Impossible de supprimer le product");
+        }
+    },
+    linkMaterials: async (productId: string, materialsList: IMaterial[]) => {
+        try {
+            // Optionnel : vérifier que tous les materialId existent
+            const existingMaterials = await db.query.materials.findMany({
+                where: inArray(
+                    materials.id,
+                    materialsList.map((m) => m.materialId),
+                ),
+            });
+
+            if (existingMaterials.length !== materialsList.length) {
+                throw new Error("Certains matériaux sont invalides");
+            }
+
+            // Supprimer les anciens liens si nécessaire
+            await db.delete(productsMaterials).where(
+                eq(productsMaterials.productId, productId),
+            );
+
+            // Insérer les nouveaux liens
+            await db.insert(productsMaterials).values(
+                materialsList.map((m) => ({
+                    productId,
+                    materialId: m.materialId,
+                    quantity: m.quantity,
+                })),
+            );
+        } catch (error) {
+            logger.error("Erreur lors de l'association des matériaux :", error);
+            throw new Error("Impossible d'associer les matériaux au produit");
         }
     },
 };
