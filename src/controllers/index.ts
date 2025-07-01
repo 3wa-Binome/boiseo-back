@@ -4,3 +4,4 @@ export * from './suppliers.controller';
 export * from './materials.controller';
 export * from './categories.controller';
 export * from './pictures.controller';
+export * from './products.controller';

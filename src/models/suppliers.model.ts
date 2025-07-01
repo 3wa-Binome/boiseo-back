@@ -51,7 +51,6 @@ export const suppliersModel = {
     },
     create: async (supplier: NewSupplier) => {
         try {
-
             return await db.insert(suppliers).values(supplier);
         } catch (error: any) {
             logger.error("Erreur lors de la création du supplier: ", error);

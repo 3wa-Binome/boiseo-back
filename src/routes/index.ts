@@ -5,6 +5,7 @@ import suppliersRouter from "./suppliers.route";
 import materialsRouter from "./materials.route";
 import categoriesRouter from "./categories.route";
 import picturesRouter from "./pictures.route";
+import productsRouter from "./products.route";
 
 
 const router = Router();
@@ -20,5 +21,7 @@ router.use('/materials', materialsRouter);
 router.use('/categories', categoriesRouter);
 
 router.use('/pictures', picturesRouter);
+
+router.use('/products', productsRouter);
 
 export default router;

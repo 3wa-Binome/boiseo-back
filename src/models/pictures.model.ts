@@ -41,17 +41,7 @@ export const picturesModel = {
     },
     create: async (picture: NewPicture) => {
         try {
-            const {
-                src,
-                userId,
-                productId
-            } = picture;
-
-            return await db.insert(pictures).values({
-                src,
-                userId,
-                productId
-            });
+            return await db.insert(pictures).values(picture);
         } catch (error: any) {
             logger.error("Erreur lors de la création du picture: ", error);
             throw new Error("Impossible de créer le picture");

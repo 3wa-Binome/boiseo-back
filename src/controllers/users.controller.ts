@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { APIResponse, hashPassword, logger, verifyPassword } from "../utils";
-import { userModel } from "../models";
+import { usersModel } from "../models";
 import z from "zod";
 import { userRegisterValidation } from "../validations";
 
@@ -8,7 +8,7 @@ export const usersController = {
     getAll: async (request: Request, response: Response) => {
         try {
             logger.info("[GET] Récupérer tous les users");
-            const users = await userModel.getAll();
+            const users = await usersModel.getAll();
             APIResponse(response, users, "OK");
         } catch (error: any) {
             logger.error("Erreur lors de la récupération des users: ", error);
@@ -26,7 +26,7 @@ export const usersController = {
 
             logger.info(`[GET] Récupérer l'user avec l'id: ${id}`);
 
-            const user = await userModel.get(id);
+            const user = await usersModel.get(id);
 
             if (!user) {
                 logger.error("User inexistant");
@@ -49,7 +49,7 @@ export const usersController = {
 
             logger.info(`[UPDATE] Modifier l'user avec l'id: ${id}`);
 
-            const user = await userModel.get(id);
+            const user = await usersModel.get(id);
             if (!user) {
                 logger.error("User inexistant");
                 return APIResponse(response, null, "User inexistant", 404);
@@ -60,7 +60,7 @@ export const usersController = {
             );
 
             // on vérifie qu'un user n'a pas déjà cet adresse email
-            const [emailAlreadyExists] = await userModel.findByCredentials(
+            const [emailAlreadyExists] = await usersModel.findByCredentials(
                 email,
             );
             if (emailAlreadyExists) {
@@ -86,7 +86,7 @@ export const usersController = {
             }
 
             // On ajoute le new user dans la db avec le mdp hashé
-            const [updatedUser] = await userModel.update(id, {
+            const [updatedUser] = await usersModel.update(id, {
                 name,
                 email,
                 password: hash,
@@ -129,13 +129,13 @@ export const usersController = {
 
             logger.info(`[DELETE] Supprimer l'user avec l'id: ${id}`);
 
-            const user = await userModel.get(id);
+            const user = await usersModel.get(id);
             if (!user) {
                 logger.error("User inexistant");
                 return APIResponse(response, null, "User inexistant", 404);
             }
 
-            await userModel.delete(id);
+            await usersModel.delete(id);
 
             // Si l'utilisateur N'EST PAS admin, il doit être déconnecté
             if (!response.locals.user.isAdmin) {

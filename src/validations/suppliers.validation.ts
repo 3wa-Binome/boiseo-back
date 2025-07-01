@@ -8,4 +8,7 @@ export const suppliersValidation = z.object({
     description: z.string()
         .trim()
         .min(1, { message: "La description est requise" })
-})
+        .max(2000, {
+            message: "La description ne doit pas dépasser 2000 caractères",
+        }),
+});
