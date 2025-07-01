@@ -4,7 +4,7 @@ import { users } from "../schemas";
 import { NewUser } from "../entities";
 import { eq } from "drizzle-orm";
 
-export const userModel = {
+export const usersModel = {
     getAll: async () => {
         try {
             return await db.query.users.findMany({
@@ -43,23 +43,23 @@ export const userModel = {
                     name: true,
                 },
                 where: eq(users.id, id),
-                with: {
-                    products: {
-                        columns: {
-                            id: true,
-                            name: true,
-                            quantity: true,
-                            description: true,
-                        },
-                        with: {
-                            category: {
-                                columns: {
-                                    name: true,
-                                },
-                            }
-                        },
-                    },
-                },
+                // with: {
+                //     products: {
+                //         columns: {
+                //             id: true,
+                //             name: true,
+                //             quantity: true,
+                //             description: true,
+                //         },
+                //         with: {
+                //             category: {
+                //                 columns: {
+                //                     name: true,
+                //                 },
+                //             }
+                //         },
+                //     },
+                // },
             });
         } catch (error: any) {
             logger.error("Erreur lors de la récupération de l'utilisateur: ", error);

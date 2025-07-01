@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { APIResponse, hashPassword, logger, verifyPassword } from "../utils";
-import { supplierModel, userModel } from "../models";
+import { APIResponse, logger } from "../utils";
+import { suppliersModel, usersModel } from "../models";
 import z from "zod";
 import { suppliersValidation } from "../validations";
 
@@ -8,7 +8,7 @@ export const suppliersController = {
     getAll: async (request: Request, response: Response) => {
         try {
             logger.info("[GET] Récupérer tous les suppliers");
-            const suppliers = await supplierModel.getAll();
+            const suppliers = await suppliersModel.getAll();
             APIResponse(response, suppliers, "OK");
         } catch (error: any) {
             logger.error("Erreur lors de la récupération des suppliers: ", error);
@@ -26,13 +26,13 @@ export const suppliersController = {
 
             logger.info(`[GET] Récupérer tous les suppliers du utilisateur : ${id}`) // Log d'information en couleur
             
-            const user = await userModel.get(id);
+            const user = await usersModel.get(id);
             if (!user) {
                 logger.error("User inexistant");
                 return APIResponse(response, null, "User inexistant", 404);
             }
 
-            const suppliers = await supplierModel.getAllByUser(id);
+            const suppliers = await suppliersModel.getAllByUser(id);
             APIResponse(response, suppliers, "OK");
         } catch (error: any) {
             logger.error(`Erreur lors de la récupération des suppliers du utilisateur cible: `, error);
@@ -45,7 +45,7 @@ export const suppliersController = {
 
             logger.info(`[GET] Récupérer l'supplier avec l'id: ${id}`);
 
-            const supplier = await supplierModel.get(id);
+            const supplier = await suppliersModel.get(id);
 
             if (!supplier) {
                 logger.error("Supplier inexistant");
@@ -69,7 +69,7 @@ export const suppliersController = {
             const supplierData = suppliersValidation.parse(request.body);
             const { user } = response.locals;
 
-            const supplier = await supplierModel.create({
+            const supplier = await suppliersModel.create({
                 userId: user.id,
                 ...supplierData
             });
@@ -88,7 +88,7 @@ export const suppliersController = {
 
             logger.info(`[UPDATE] Modifier le supplier avec l'id: ${id}`);
 
-            const supplier = await supplierModel.get(id);
+            const supplier = await suppliersModel.get(id);
             if (!supplier) {
                 logger.error("Supplier inexistant");
                 return APIResponse(response, null, "Supplier inexistant", 404);
@@ -96,7 +96,7 @@ export const suppliersController = {
 
             const supplierData = suppliersValidation.parse(request.body)
 
-            await supplierModel.update(id, supplierData)
+            await suppliersModel.update(id, supplierData)
             APIResponse(response, null, "OK", 201);
         } catch (error: any) {
             logger.error("Erreur lors de la màj du supplier: ", error);
@@ -112,13 +112,13 @@ export const suppliersController = {
 
             logger.info(`[DELETE] Supprimer l'supplier avec l'id: ${id}`);
 
-            const supplier = await supplierModel.get(id);
+            const supplier = await suppliersModel.get(id);
             if (!supplier) {
                 logger.error("Supplier inexistant");
                 return APIResponse(response, null, "Supplier inexistant", 404);
             }
 
-            await supplierModel.delete(id);
+            await suppliersModel.delete(id);
 
             // Si l'utilisateur N'EST PAS admin, il doit être déconnecté
             if (!response.locals.supplier.isAdmin) {

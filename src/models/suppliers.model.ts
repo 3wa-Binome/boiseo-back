@@ -1,22 +1,32 @@
 import { db } from "../config/pool";
 import { logger } from "../utils";
-import { suppliers } from "../schemas";
+import { materials, suppliers } from "../schemas";
 import { NewSupplier } from "../entities";
 import { eq } from "drizzle-orm";
 
-export const supplierModel = {
+export const suppliersModel = {
     getAll: async () => {
         try {
-            return await db.query.suppliers.findMany({});
+            return await db.query.suppliers.findMany({
+                with: {
+                    materials: {},
+                },
+            });
         } catch (error: any) {
-            logger.error("Erreur lors de la récupération des suppliers: ", error);
+            logger.error(
+                "Erreur lors de la récupération des suppliers: ",
+                error,
+            );
             throw new Error("Impossible de récupérer les suppliers");
         }
     },
     get: async (id: string) => {
         try {
             return await db.query.suppliers.findFirst({
-                where: eq(suppliers.id, id)
+                where: eq(suppliers.id, id),
+                with: {
+                    materials: {},
+                },
             });
         } catch (error: any) {
             logger.error("Erreur lors de la récupération du supplier: ", error);
@@ -27,9 +37,15 @@ export const supplierModel = {
         try {
             return await db.query.suppliers.findMany({
                 where: eq(suppliers.userId, userId),
+                with: {
+                    materials: {},
+                },
             });
         } catch (error: any) {
-            logger.error(`Impossible de récupérer les suppliers de ${userId}: +`, error);
+            logger.error(
+                `Impossible de récupérer les suppliers de ${userId}: +`,
+                error,
+            );
             return [];
         }
     },
@@ -38,14 +54,14 @@ export const supplierModel = {
             const {
                 name,
                 description,
-                userId
+                userId,
             } = supplier;
 
             return await db.insert(suppliers).values({
                 name,
                 description,
-                userId
-            })
+                userId,
+            });
         } catch (error: any) {
             logger.error("Erreur lors de la création du supplier: ", error);
             throw new Error("Impossible de créer le supplier");
@@ -53,7 +69,9 @@ export const supplierModel = {
     },
     update: async (id: string, supplier: Partial<NewSupplier>) => {
         try {
-            return await db.update(suppliers).set(supplier).where(eq(suppliers.id, id));
+            return await db.update(suppliers).set(supplier).where(
+                eq(suppliers.id, id),
+            );
         } catch (error: any) {
             logger.error("Erreur lors de la mise à jour du supplier: ", error);
             throw new Error("Impossible de mettre à jour le supplier");
