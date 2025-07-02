@@ -9,8 +9,6 @@ suppliersRouter.get("/user/:id", isAuthenticated(true), isOwner(users), supplier
 
 suppliersRouter.get("/:id", isAuthenticated(true), isOwner(suppliers), suppliersController.get);
 
-suppliersRouter.get("/", suppliersController.getAll);
-
 suppliersRouter.post("/", isAuthenticated(true), suppliersController.create);
 
 suppliersRouter.put("/:id", isAuthenticated(true), isOwner(suppliers), suppliersController.update);
