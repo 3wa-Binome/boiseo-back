@@ -9,12 +9,34 @@ export const materialsModel = {
         try {
             return await db.query.materials.findMany({
                 with: {
-                    suppliers: {
+                    supplier: {
                         columns: {
                             id: true,
                             name: true,
                         },
                     },
+                    productsMaterials: {
+                        columns: {
+                            id: true,
+                            quantity: true
+                        },
+                        with: {
+                            product: {
+                                columns: {
+                                    id: true,
+                                    name: true
+                                },
+                                with: {
+                                    category: {
+                                        columns: {
+                                            id: true,
+                                            name: true
+                                        }
+                                    }
+                                }
+                            },
+                        }
+                    }
                 },
             });
         } catch (error: any) {
@@ -30,12 +52,34 @@ export const materialsModel = {
             return await db.query.materials.findFirst({
                 where: eq(materials.id, id),
                 with: {
-                    suppliers: {
+                    supplier: {
                         columns: {
                             id: true,
                             name: true,
                         },
                     },
+                    productsMaterials: {
+                        columns: {
+                            id: true,
+                            quantity: true
+                        },
+                        with: {
+                            product: {
+                                columns: {
+                                    id: true,
+                                    name: true
+                                },
+                                with: {
+                                    category: {
+                                        columns: {
+                                            id: true,
+                                            name: true
+                                        }
+                                    }
+                                }
+                            },
+                        }
+                    }
                 },
             });
         } catch (error: any) {
@@ -48,7 +92,7 @@ export const materialsModel = {
             return await db.query.materials.findMany({
                 where: eq(materials.userId, userId),
                 with: {
-                    suppliers: {
+                    supplier: {
                         columns: {
                             id: true,
                             name: true,

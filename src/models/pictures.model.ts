@@ -19,6 +19,10 @@ export const picturesModel = {
     get: async (id: string) => {
         try {
             return await db.query.pictures.findFirst({
+                columns: {
+                    id: true,
+                    src: true
+                },
                 where: eq(pictures.id, id),
             });
         } catch (error: any) {
@@ -29,6 +33,10 @@ export const picturesModel = {
     getAllByProduct: async (productId: string) => {
         try {
             return await db.query.pictures.findMany({
+                columns: {
+                    id: true,
+                    src: true
+                },
                 where: eq(pictures.productId, productId),
             });
         } catch (error: any) {

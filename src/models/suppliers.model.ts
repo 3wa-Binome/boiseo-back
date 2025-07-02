@@ -9,7 +9,12 @@ export const suppliersModel = {
         try {
             return await db.query.suppliers.findMany({
                 with: {
-                    materials: {},
+                    materials: {
+                        columns: {
+                            id: true,
+                            name: true
+                        }
+                    },
                 },
             });
         } catch (error: any) {
@@ -25,7 +30,12 @@ export const suppliersModel = {
             return await db.query.suppliers.findFirst({
                 where: eq(suppliers.id, id),
                 with: {
-                    materials: {},
+                    materials: {
+                        columns: {
+                            id: true,
+                            name: true
+                        }
+                    },
                 },
             });
         } catch (error: any) {
@@ -38,7 +48,12 @@ export const suppliersModel = {
             return await db.query.suppliers.findMany({
                 where: eq(suppliers.userId, userId),
                 with: {
-                    materials: {},
+                    materials: {
+                        columns: {
+                            id: true,
+                            name: true
+                        }
+                    },
                 },
             });
         } catch (error: any) {

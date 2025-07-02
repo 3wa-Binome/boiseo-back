@@ -12,57 +12,112 @@ export const usersModel = {
                     id: true,
                     name: true,
                 },
-                // with: {
-                //     products: {
-                //         columns: {
-                //             id: true,
-                //             name: true,
-                //             quantity: true,
-                //             description: true,
-                //         },
-                //         with: {
-                //             category: {
-                //                 columns: {
-                //                     name: true,
-                //                 },
-                //             }
-                //         },
-                //     },
-                // },
+                with: {
+                    categories: {
+                        with: {
+                            products: {
+                                columns: { id: true },
+                            },
+                        },
+                    },
+                    pictures: {
+                        where: (fields, operators) =>
+                            operators.isNull(fields.productId),
+                        columns: {
+                            id: true,
+                            src: true,
+                        },
+                    },
+                    materials: {
+                        columns: {
+                            id: true,
+                            name: true
+                        },
+                        with: {
+                            productsMaterials: {
+                                columns: {
+                                    quantity: true
+                                }
+                            }
+                        }
+                    },
+                    suppliers: {
+                        columns: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                },
             });
         } catch (error: any) {
-            logger.error("Erreur lors de la récupération des utilisateurs: ", error);
+            logger.error(
+                "Erreur lors de la récupération des utilisateurs: ",
+                error,
+            );
             throw new Error("Impossible de récupérer les utilisateurs");
         }
     },
     get: async (id: string) => {
         try {
-            return await db.query.users.findFirst({
+            const user = await db.query.users.findFirst({
                 columns: {
                     id: true,
                     name: true,
+                    createdAt: true,
                 },
                 where: eq(users.id, id),
-                // with: {
-                //     products: {
-                //         columns: {
-                //             id: true,
-                //             name: true,
-                //             quantity: true,
-                //             description: true,
-                //         },
-                //         with: {
-                //             category: {
-                //                 columns: {
-                //                     name: true,
-                //                 },
-                //             }
-                //         },
-                //     },
-                // },
+                with: {
+                    categories: {
+                        with: {
+                            products: {
+                                columns: { id: true },
+                            },
+                        },
+                    },
+                    pictures: {
+                        where: (fields, operators) =>
+                            operators.isNull(fields.productId),
+                        columns: {
+                            id: true,
+                            src: true,
+                        },
+                    },
+                    materials: {
+                        columns: {
+                            id: true,
+                            name: true
+                        },
+                        with: {
+                            productsMaterials: {
+                                columns: {
+                                    quantity: true
+                                }
+                            }
+                        }
+                    },
+                    suppliers: {
+                        columns: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                },
             });
+
+            if (user) {
+                user.categories = user.categories.map((category) => ({
+                    ...category,
+                    productCount: category.products.length,
+                }));
+            }
+
+            return user
+
         } catch (error: any) {
-            logger.error("Erreur lors de la récupération de l'utilisateur: ", error);
+            logger.error(
+                "Erreur lors de la récupération de l'utilisateur: ",
+                error,
+            );
             throw new Error("Impossible de récupérer l'utilisateur");
         }
     },
@@ -77,15 +132,21 @@ export const usersModel = {
                 .from(users)
                 .where(eq(users.email, email));
         } catch (error: any) {
-            logger.error("Erreur lors de la récupération de l'utilisateur: ", error);
+            logger.error(
+                "Erreur lors de la récupération de l'utilisateur: ",
+                error,
+            );
             throw new Error("Impossible de récupérer l'utilisateur");
         }
     },
     create: async (user: NewUser) => {
         try {
-            return await db.insert(users).values(user)
+            return await db.insert(users).values(user);
         } catch (error: any) {
-            logger.error("Erreur lors de la création de l'utilisateur: ", error);
+            logger.error(
+                "Erreur lors de la création de l'utilisateur: ",
+                error,
+            );
             throw new Error("Impossible de créer l'utilisateur");
         }
     },
@@ -93,7 +154,10 @@ export const usersModel = {
         try {
             return await db.update(users).set(user).where(eq(users.id, id));
         } catch (error: any) {
-            logger.error("Erreur lors de la mise à jour de l'utilisateur: ", error);
+            logger.error(
+                "Erreur lors de la mise à jour de l'utilisateur: ",
+                error,
+            );
             throw new Error("Impossible de mettre à jour l'utilisateur");
         }
     },
@@ -101,7 +165,10 @@ export const usersModel = {
         try {
             return await db.delete(users).where(eq(users.id, id));
         } catch (error: any) {
-            logger.error("Erreur lors de la suppression de l'utilisateur: ", error);
+            logger.error(
+                "Erreur lors de la suppression de l'utilisateur: ",
+                error,
+            );
             throw new Error("Impossible de supprimer l'utilisateur");
         }
     },

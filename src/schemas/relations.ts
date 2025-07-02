@@ -46,7 +46,6 @@ export const materialsRelations = relations(materials, ({ many, one }) => ({
 }));
 
 export const productsMaterialsRelations = relations(productsMaterials, ({ many, one }) => ({
-    pictures: many(pictures),
     material: one(materials, {
         fields: [productsMaterials.materialId],
         references: [materials.id]
@@ -59,6 +58,7 @@ export const productsMaterialsRelations = relations(productsMaterials, ({ many, 
 
 export const productsRelations = relations(products, ({ many, one }) => ({
     productsMaterials: many(productsMaterials),
+    pictures: many(pictures),
     user: one(users, {
         fields: [products.userId],
         references: [users.id]

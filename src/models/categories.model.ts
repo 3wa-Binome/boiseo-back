@@ -1,14 +1,36 @@
 import { db } from "../config/pool";
 import { logger } from "../utils";
-import { materials, categories } from "../schemas";
+import { categories, materials } from "../schemas";
 import { NewCategory } from "../entities";
 import { eq } from "drizzle-orm";
 
 export const categoriesModel = {
     getAll: async () => {
         try {
-            return await db.query.categories.findMany({
+            const response = await db.query.categories.findMany({
+                with: {
+                    products: {
+                        columns: {
+                            id: true,
+                            name: true,
+                            quantity: true,
+                        },
+                    },
+                },
             });
+
+            if (response) {
+                response.map((category) => ({
+                    ...category,
+                    productCount: category.products.length,
+                    productMadeCount: category.products.reduce(
+                        (total, product) => total + (product.quantity ?? 0),
+                        0,
+                    ),
+                }));
+            }
+
+            return response
         } catch (error: any) {
             logger.error(
                 "Erreur lors de la récupération des categories: ",
@@ -21,17 +43,51 @@ export const categoriesModel = {
         try {
             return await db.query.categories.findFirst({
                 where: eq(categories.id, id),
+                with: {
+                    products: {
+                        columns: {
+                            id: true,
+                            name: true,
+                            quantity: true,
+                        },
+                    },
+                },
             });
         } catch (error: any) {
-            logger.error("Erreur lors de la récupération du categorie: ", error);
+            logger.error(
+                "Erreur lors de la récupération du categorie: ",
+                error,
+            );
             throw new Error("Impossible de récupérer le categorie");
         }
     },
     getAllByUser: async (userId: string) => {
         try {
-            return await db.query.categories.findMany({
+            const response = await db.query.categories.findMany({
                 where: eq(categories.userId, userId),
+                with: {
+                    products: {
+                        columns: {
+                            id: true,
+                            name: true,
+                            quantity: true,
+                        },
+                    },
+                },
             });
+
+            if (response) {
+                response.map((category) => ({
+                    ...category,
+                    productCount: category.products.length,
+                    productMadeCount: category.products.reduce(
+                        (total, product) => total + (product.quantity ?? 0),
+                        0,
+                    ),
+                }));
+            }
+
+            return categories;
         } catch (error: any) {
             logger.error(
                 `Impossible de récupérer les categories de ${userId}: +`,

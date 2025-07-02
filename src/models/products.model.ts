@@ -9,13 +9,38 @@ export const productsModel = {
     getAll: async () => {
         try {
             return await db.query.products.findMany({
+                columns: {
+                    id: true,
+                    name: true,
+                    quantity: true
+                },
                 with: {
-                    categories: {
+                    category: {
                         columns: {
                             id: true,
                             name: true,
                         },
                     },
+                    productsMaterials: {
+                        columns: {
+                            id: true,
+                            quantity: true
+                        },
+                        with: {
+                            material: {
+                                columns: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
+                        }
+                    },
+                    pictures: {
+                        columns: {
+                            id: true,
+                            src: true
+                        }
+                    }
                 },
             });
         } catch (error: any) {
@@ -31,12 +56,32 @@ export const productsModel = {
             return await db.query.products.findFirst({
                 where: eq(products.id, id),
                 with: {
-                    categories: {
+                    category: {
                         columns: {
                             id: true,
                             name: true,
                         },
                     },
+                    productsMaterials: {
+                        columns: {
+                            id: true,
+                            quantity: true
+                        },
+                        with: {
+                            material: {
+                                columns: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
+                        }
+                    },
+                    pictures: {
+                        columns: {
+                            id: true,
+                            src: true
+                        }
+                    }
                 },
             });
         } catch (error: any) {
@@ -47,14 +92,39 @@ export const productsModel = {
     getAllByUser: async (userId: string) => {
         try {
             return await db.query.products.findMany({
+                columns: {
+                    id: true,
+                    name: true,
+                    quantity: true
+                },
                 where: eq(products.userId, userId),
                 with: {
-                    categories: {
+                    category: {
                         columns: {
                             id: true,
                             name: true,
                         },
                     },
+                    productsMaterials: {
+                        columns: {
+                            id: true,
+                            quantity: true
+                        },
+                        with: {
+                            material: {
+                                columns: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
+                        }
+                    },
+                    pictures: {
+                        columns: {
+                            id: true,
+                            src: true
+                        }
+                    }
                 },
             });
         } catch (error: any) {
@@ -68,14 +138,39 @@ export const productsModel = {
     getAllByCategory: async (categoryId: string) => {
         try {
             return await db.query.products.findMany({
+                columns: {
+                    id: true,
+                    name: true,
+                    quantity: true
+                },
                 where: eq(products.categoryId, categoryId),
                 with: {
-                    categories: {
+                    category: {
                         columns: {
                             id: true,
                             name: true,
                         },
                     },
+                    productsMaterials: {
+                        columns: {
+                            id: true,
+                            quantity: true
+                        },
+                        with: {
+                            material: {
+                                columns: {
+                                    id: true,
+                                    name: true
+                                }
+                            }
+                        }
+                    },
+                    pictures: {
+                        columns: {
+                            id: true,
+                            src: true
+                        }
+                    }
                 },
             });
         } catch (error: any) {
