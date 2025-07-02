@@ -1,10 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
-import { userModel } from "../models";
-import { db } from "../config/pool";
-import { users } from "../schemas";
-import { eq } from "drizzle-orm";
 import { logger, APIResponse } from "../utils";
 
 const { JWT_SECRET } = env;
