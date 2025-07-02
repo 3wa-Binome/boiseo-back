@@ -2,7 +2,8 @@ CREATE TABLE `suppliers` (
 	`id` varchar(36) NOT NULL,
 	`name` varchar(255) NOT NULL,
 	`description` text NOT NULL,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP
+,
 	`id_users` varchar(36) NOT NULL,
 	CONSTRAINT `suppliers_id` PRIMARY KEY(`id`)
 );
@@ -11,7 +12,8 @@ CREATE TABLE `materials` (
 	`id` varchar(36) NOT NULL,
 	`name` varchar(255) NOT NULL,
 	`description` text NOT NULL,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP
+,
 	`id_suppliers` varchar(36) NOT NULL,
 	`id_users` varchar(36) NOT NULL,
 	CONSTRAINT `materials_id` PRIMARY KEY(`id`)
@@ -20,14 +22,16 @@ CREATE TABLE `materials` (
 CREATE TABLE `categories` (
 	`id` varchar(36) NOT NULL,
 	`name` varchar(255) NOT NULL,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP
+,
 	CONSTRAINT `categories_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `pictures` (
 	`id` varchar(36) NOT NULL,
 	`src` varchar(255) NOT NULL,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP
+,
 	`id_users` varchar(36) NOT NULL,
 	`id_products` varchar(36),
 	CONSTRAINT `pictures_id` PRIMARY KEY(`id`)
@@ -38,7 +42,8 @@ CREATE TABLE `products` (
 	`name` varchar(255) NOT NULL,
 	`description` text NOT NULL,
 	`quantity` int NOT NULL DEFAULT 0,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP
+,
 	`id_users` varchar(36) NOT NULL,
 	`id_categories` varchar(36),
 	CONSTRAINT `products_id` PRIMARY KEY(`id`)

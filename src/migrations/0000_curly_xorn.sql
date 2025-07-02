@@ -3,7 +3,7 @@ CREATE TABLE `users` (
 	`name` varchar(255) NOT NULL,
 	`email` varchar(255) NOT NULL,
 	`password` varchar(255) NOT NULL,
-	`created_at` timestamp DEFAULT (now()),
+	`created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
 	CONSTRAINT `users_id` PRIMARY KEY(`id`),
 	CONSTRAINT `users_email_unique` UNIQUE(`email`)
 );

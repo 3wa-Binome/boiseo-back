@@ -120,16 +120,16 @@ export const materialsController = {
 
             await materialsModel.delete(id);
 
-            return APIResponse(response, null, "Utilisateur supprimé", 200);
+            return APIResponse(response, null, "Material supprimé", 200);
         } catch (error: any) {
             logger.error(
-                "Erreur lors de la suppression du utilisateur: ",
+                "Erreur lors de la suppression du material: ",
                 error,
             );
             APIResponse(
                 response,
                 null,
-                "Erreur lors de la suppression du utilisateur",
+                "Erreur lors de la suppression du material",
                 500,
             );
         }

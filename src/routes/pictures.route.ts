@@ -9,8 +9,6 @@ picturesRouter.get("/product/:id", isAuthenticated(true), isOwner(products), pic
 
 picturesRouter.get("/:id", picturesController.get);
 
-// picturesRouter.get("/", picturesController.getAll);
-
 picturesRouter.post("/", isAuthenticated(true), picturesController.create);
 
 picturesRouter.delete("/:id", isAuthenticated(true), isOwner(pictures), picturesController.delete);

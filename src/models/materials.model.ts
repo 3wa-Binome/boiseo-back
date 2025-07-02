@@ -1,44 +1,96 @@
 import { db } from "../config/pool";
 import { logger } from "../utils";
-import { materials, suppliers } from "../schemas";
+import {
+    categories,
+    materials,
+    products,
+    productsMaterials,
+    suppliers,
+} from "../schemas";
 import { NewMaterial } from "../entities";
 import { eq } from "drizzle-orm";
 
 export const materialsModel = {
     getAll: async () => {
         try {
-            return await db.query.materials.findMany({
-                with: {
-                    supplier: {
+            const materialsList = await db.query.materials.findMany({
+                columns: {
+                    id: true,
+                    name: true,
+                    supplierId: true,
+                },
+            });
+
+            // Pour chaque material, on récupère son supplier et ses productsMaterials
+            const enrichedMaterials = await Promise.all(
+                materialsList.map(async (material) => {
+                    // Récupérer le supplier
+                    const supplier = await db.query.suppliers.findFirst({
+                        where: eq(suppliers.id, material.supplierId),
                         columns: {
                             id: true,
                             name: true,
                         },
-                    },
-                    productsMaterials: {
-                        columns: {
-                            id: true,
-                            quantity: true
-                        },
-                        with: {
-                            product: {
+                    });
+
+                    // Récupérer les productsMaterials liés à ce material
+                    const productsMaterialsLists = await db.query
+                        .productsMaterials
+                        .findMany({
+                            where: eq(
+                                productsMaterials.materialId,
+                                material.id,
+                            ),
+                            columns: {
+                                id: true,
+                                quantity: true,
+                                productId: true,
+                            },
+                        });
+
+                    // Pour chaque productMaterial, récupérer le produit et sa catégorie
+                    const enrichedProductsMaterials = await Promise.all(
+                        productsMaterialsLists.map(async (pm) => {
+                            const product = await db.query.products.findFirst({
+                                where: eq(products.id, pm.productId),
                                 columns: {
                                     id: true,
-                                    name: true
+                                    name: true,
+                                    categoryId: true,
                                 },
-                                with: {
-                                    category: {
-                                        columns: {
-                                            id: true,
-                                            name: true
-                                        }
-                                    }
-                                }
-                            },
-                        }
-                    }
-                },
-            });
+                            });
+
+                            const category = product
+                                ? await db.query.categories.findFirst({
+                                    where: eq(
+                                        categories.id,
+                                        product.categoryId,
+                                    ),
+                                    columns: {
+                                        id: true,
+                                        name: true,
+                                    },
+                                })
+                                : null;
+
+                            return {
+                                ...pm,
+                                product: product
+                                    ? { ...product, category }
+                                    : null,
+                            };
+                        }),
+                    );
+
+                    return {
+                        ...material,
+                        supplier,
+                        productsMaterials: enrichedProductsMaterials,
+                    };
+                }),
+            );
+
+            return enrichedMaterials;
         } catch (error: any) {
             logger.error(
                 "Erreur lors de la récupération des materials: ",
@@ -49,39 +101,76 @@ export const materialsModel = {
     },
     get: async (id: string) => {
         try {
-            return await db.query.materials.findFirst({
+            const material = await db.query.materials.findFirst({
                 where: eq(materials.id, id),
-                with: {
-                    supplier: {
+                columns: {
+                    id: true,
+                    name: true,
+                    supplierId: true,
+                },
+            });
+
+            if (!material) {
+                throw new Error("Matériau introuvable");
+            }
+
+            // Récupérer le fournisseur
+            const supplier = await db.query.suppliers.findFirst({
+                where: eq(suppliers.id, material.supplierId),
+                columns: {
+                    id: true,
+                    name: true,
+                },
+            });
+
+            // Récupérer les liaisons productsMaterials
+            const productsMaterialsList = await db.query.productsMaterials
+                .findMany({
+                    where: eq(productsMaterials.materialId, material.id),
+                    columns: {
+                        id: true,
+                        quantity: true,
+                        productId: true,
+                    },
+                });
+
+            // Pour chaque liaison, récupérer le produit et sa catégorie
+            const enrichedProductsMaterials = await Promise.all(
+                productsMaterialsList.map(async (pm) => {
+                    const product = await db.query.products.findFirst({
+                        where: eq(products.id, pm.productId),
                         columns: {
                             id: true,
                             name: true,
+                            categoryId: true,
                         },
-                    },
-                    productsMaterials: {
-                        columns: {
-                            id: true,
-                            quantity: true
-                        },
-                        with: {
-                            product: {
-                                columns: {
-                                    id: true,
-                                    name: true
-                                },
-                                with: {
-                                    category: {
-                                        columns: {
-                                            id: true,
-                                            name: true
-                                        }
-                                    }
-                                }
+                    });
+
+                    const category = product?.categoryId
+                        ? await db.query.categories.findFirst({
+                            where: eq(categories.id, product.categoryId),
+                            columns: {
+                                id: true,
+                                name: true,
                             },
-                        }
-                    }
-                },
-            });
+                        })
+                        : null;
+
+                    return {
+                        ...pm,
+                        product: product ? { ...product, category } : null,
+                    };
+                }),
+            );
+
+            // Résultat final
+            const enrichedMaterial = {
+                ...material,
+                supplier,
+                productsMaterials: enrichedProductsMaterials,
+            };
+
+            return enrichedMaterial;
         } catch (error: any) {
             logger.error("Erreur lors de la récupération du material: ", error);
             throw new Error("Impossible de récupérer le material");
@@ -89,17 +178,33 @@ export const materialsModel = {
     },
     getAllByUser: async (userId: string) => {
         try {
-            return await db.query.materials.findMany({
+            const materialsList = await db.query.materials.findMany({
                 where: eq(materials.userId, userId),
-                with: {
-                    supplier: {
+                columns: {
+                    id: true,
+                    name: true,
+                    supplierId: true,
+                },
+            });
+
+            const enrichedMaterials = await Promise.all(
+                materialsList.map(async (material) => {
+                    const supplier = await db.query.suppliers.findFirst({
+                        where: eq(suppliers.id, material.supplierId),
                         columns: {
                             id: true,
                             name: true,
                         },
-                    },
-                },
-            });
+                    });
+
+                    return {
+                        ...material,
+                        supplier,
+                    };
+                }),
+            );
+
+            return enrichedMaterials;
         } catch (error: any) {
             logger.error(
                 `Impossible de récupérer les materials de ${userId}: +`,

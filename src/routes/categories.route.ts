@@ -9,8 +9,6 @@ categoriesRouter.get("/user/:id", isAuthenticated(true), isOwner(users), categor
 
 categoriesRouter.get("/:id", isAuthenticated(true), isOwner(categories), categoriesController.get);
 
-// categoriesRouter.get("/", categoriesController.getAll);
-
 categoriesRouter.post("/", isAuthenticated(true), categoriesController.create);
 
 categoriesRouter.put("/:id", isAuthenticated(true), isOwner(categories), categoriesController.update);

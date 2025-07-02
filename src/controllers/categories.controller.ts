@@ -120,16 +120,16 @@ export const categoriesController = {
 
             await categoriesModel.delete(id);
 
-            return APIResponse(response, null, "Utilisateur supprimé", 200);
+            return APIResponse(response, null, "Catégorie supprimé", 200);
         } catch (error: any) {
             logger.error(
-                "Erreur lors de la suppression de la utilisateur: ",
+                "Erreur lors de la suppression de la categorie: ",
                 error,
             );
             APIResponse(
                 response,
                 null,
-                "Erreur lors de la suppression de la utilisateur",
+                "Erreur lors de la suppression de la categorie",
                 500,
             );
         }

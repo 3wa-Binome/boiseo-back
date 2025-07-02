@@ -120,16 +120,16 @@ export const picturesController = {
 
             await picturesModel.delete(id);
 
-            return APIResponse(response, null, "Utilisateur supprimé", 200);
+            return APIResponse(response, null, "picture supprimé", 200);
         } catch (error: any) {
             logger.error(
-                "Erreur lors de la suppression du utilisateur: ",
+                "Erreur lors de la suppression du picture: ",
                 error,
             );
             APIResponse(
                 response,
                 null,
-                "Erreur lors de la suppression du utilisateur",
+                "Erreur lors de la suppression du picture",
                 500,
             );
         }

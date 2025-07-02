@@ -7,16 +7,31 @@ import { eq } from "drizzle-orm";
 export const suppliersModel = {
     getAll: async () => {
         try {
-            return await db.query.suppliers.findMany({
-                with: {
-                    materials: {
-                        columns: {
-                            id: true,
-                            name: true
-                        }
-                    },
+            const suppliersLists = await db.query.suppliers.findMany({
+                columns: {
+                    id: true,
+                    name: true,
                 },
             });
+
+            const suppliersWithMaterials = await Promise.all(
+                suppliersLists.map(async (supplier) => {
+                    const materialsLists = await db.query.materials.findMany({
+                        where: eq(materials.supplierId, supplier.id),
+                        columns: {
+                            id: true,
+                            name: true,
+                        },
+                    });
+
+                    return {
+                        ...supplier,
+                        materials: materialsLists,
+                    };
+                }),
+            );
+
+            return suppliersWithMaterials;
         } catch (error: any) {
             logger.error(
                 "Erreur lors de la récupération des suppliers: ",
@@ -27,17 +42,28 @@ export const suppliersModel = {
     },
     get: async (id: string) => {
         try {
-            return await db.query.suppliers.findFirst({
+            const supplier = await db.query.suppliers.findFirst({
                 where: eq(suppliers.id, id),
-                with: {
-                    materials: {
-                        columns: {
-                            id: true,
-                            name: true
-                        }
-                    },
+                columns: {
+                    id: true,
+                    name: true,
                 },
             });
+
+            const materialsLists = await db.query.materials.findMany({
+                where: eq(materials.supplierId, suppliers.id),
+                columns: {
+                    id: true,
+                    name: true,
+                },
+            });
+
+            const supplierWithMaterials = {
+                ...supplier,
+                materials: materialsLists,
+            };
+
+            return supplierWithMaterials;
         } catch (error: any) {
             logger.error("Erreur lors de la récupération du supplier: ", error);
             throw new Error("Impossible de récupérer le supplier");
@@ -45,17 +71,32 @@ export const suppliersModel = {
     },
     getAllByUser: async (userId: string) => {
         try {
-            return await db.query.suppliers.findMany({
+            const suppliersLists = await db.query.suppliers.findMany({
                 where: eq(suppliers.userId, userId),
-                with: {
-                    materials: {
-                        columns: {
-                            id: true,
-                            name: true
-                        }
-                    },
+                columns: {
+                    id: true,
+                    name: true,
                 },
             });
+
+            const enrichedSuppliers = await Promise.all(
+                suppliersLists.map(async (supplier) => {
+                    const materialsLists = await db.query.materials.findMany({
+                        where: eq(materials.supplierId, supplier.id),
+                        columns: {
+                            id: true,
+                            name: true,
+                        },
+                    });
+
+                    return {
+                        ...supplier,
+                        materials: materialsLists,
+                    };
+                }),
+            );
+
+            return enrichedSuppliers;
         } catch (error: any) {
             logger.error(
                 `Impossible de récupérer les suppliers de ${userId}: +`,

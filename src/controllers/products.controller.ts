@@ -245,16 +245,16 @@ export const productsController = {
 
             await productsModel.delete(id);
 
-            return APIResponse(response, null, "Utilisateur supprimé", 200);
+            return APIResponse(response, null, "Product supprimé", 200);
         } catch (error: any) {
             logger.error(
-                "Erreur lors de la suppression du utilisateur: ",
+                "Erreur lors de la suppression du product: ",
                 error,
             );
             APIResponse(
                 response,
                 null,
-                "Erreur lors de la suppression du utilisateur",
+                "Erreur lors de la suppression du product",
                 500,
             );
         }

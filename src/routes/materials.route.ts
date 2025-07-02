@@ -9,8 +9,6 @@ materialsRouter.get("/user/:id", isAuthenticated(true), isOwner(users), material
 
 materialsRouter.get("/:id", isAuthenticated(true), isOwner(materials), materialsController.get);
 
-// materialsRouter.get("/", materialsController.getAll);
-
 materialsRouter.post("/", isAuthenticated(true), materialsController.create);
 
 materialsRouter.put("/:id", isAuthenticated(true), isOwner(materials), materialsController.update);

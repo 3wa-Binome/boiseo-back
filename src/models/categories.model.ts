@@ -1,36 +1,46 @@
 import { db } from "../config/pool";
 import { logger } from "../utils";
-import { categories, materials } from "../schemas";
+import { categories, materials, products } from "../schemas";
 import { NewCategory } from "../entities";
 import { eq } from "drizzle-orm";
 
 export const categoriesModel = {
     getAll: async () => {
         try {
-            const response = await db.query.categories.findMany({
-                with: {
-                    products: {
+            // Étape 1 : récupérer toutes les catégories
+            const categoriesList = await db.query.categories.findMany({
+                columns: {
+                    id: true,
+                    name: true,
+                    createdAt: true, // ajoute les colonnes que tu veux
+                },
+            });
+
+            // Étape 2 : pour chaque catégorie, récupérer ses produits
+            const enrichedCategories = await Promise.all(
+                categoriesList.map(async (category) => {
+                    const productsLists = await db.query.products.findMany({
+                        where: eq(products.categoryId, category.id),
                         columns: {
                             id: true,
                             name: true,
                             quantity: true,
                         },
-                    },
-                },
-            });
+                    });
 
-            if (response) {
-                response.map((category) => ({
-                    ...category,
-                    productCount: category.products.length,
-                    productMadeCount: category.products.reduce(
-                        (total, product) => total + (product.quantity ?? 0),
-                        0,
-                    ),
-                }));
-            }
+                    return {
+                        ...category,
+                        productsLists,
+                        productCount: productsLists.length,
+                        productMadeCount: productsLists.reduce(
+                            (total, product) => total + (product.quantity ?? 0),
+                            0,
+                        ),
+                    };
+                }),
+            );
 
-            return response
+            return enrichedCategories;
         } catch (error: any) {
             logger.error(
                 "Erreur lors de la récupération des categories: ",
@@ -41,18 +51,40 @@ export const categoriesModel = {
     },
     get: async (id: string) => {
         try {
-            return await db.query.categories.findFirst({
+            // Étape 1 : récupérer la catégorie seule
+            const category = await db.query.categories.findFirst({
                 where: eq(categories.id, id),
-                with: {
-                    products: {
-                        columns: {
-                            id: true,
-                            name: true,
-                            quantity: true,
-                        },
-                    },
+                columns: {
+                    id: true,
+                    name: true,
+                    createdAt: true, // ajoute les colonnes que tu veux
                 },
             });
+
+            if (!category) {
+                throw new Error("Catégorie introuvable");
+            }
+
+            // Étape 2 : récupérer les produits liés à cette catégorie
+            const productsLists = await db.query.products.findMany({
+                where: eq(products.categoryId, category.id),
+                columns: {
+                    id: true,
+                    name: true,
+                    quantity: true,
+                },
+            });
+
+            // Étape 3 : enrichir la catégorie avec les produits
+            return {
+                ...category,
+                productsLists,
+                productCount: productsLists.length,
+                productMadeCount: productsLists.reduce(
+                    (total, product) => total + (product.quantity ?? 0),
+                    0,
+                ),
+            };
         } catch (error: any) {
             logger.error(
                 "Erreur lors de la récupération du categorie: ",
@@ -63,31 +95,39 @@ export const categoriesModel = {
     },
     getAllByUser: async (userId: string) => {
         try {
-            const response = await db.query.categories.findMany({
+            const categoriesList = await db.query.categories.findMany({
                 where: eq(categories.userId, userId),
-                with: {
-                    products: {
+                columns: {
+                    id: true,
+                    name: true,
+                    createdAt: true, // ajoute les colonnes nécessaires
+                },
+            });
+
+            const enrichedCategories = await Promise.all(
+                categoriesList.map(async (category) => {
+                    const productsLists = await db.query.products.findMany({
+                        where: eq(products.categoryId, category.id),
                         columns: {
                             id: true,
                             name: true,
                             quantity: true,
                         },
-                    },
-                },
-            });
+                    });
 
-            if (response) {
-                response.map((category) => ({
-                    ...category,
-                    productCount: category.products.length,
-                    productMadeCount: category.products.reduce(
-                        (total, product) => total + (product.quantity ?? 0),
-                        0,
-                    ),
-                }));
-            }
+                    return {
+                        ...category,
+                        productsLists,
+                        productCount: productsLists.length,
+                        productMadeCount: productsLists.reduce(
+                            (total, product) => total + (product.quantity ?? 0),
+                            0,
+                        ),
+                    };
+                }),
+            );
 
-            return categories;
+            return enrichedCategories;
         } catch (error: any) {
             logger.error(
                 `Impossible de récupérer les categories de ${userId}: +`,

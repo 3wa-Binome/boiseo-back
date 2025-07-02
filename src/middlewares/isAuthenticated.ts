@@ -1,13 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
-import { logger, APIResponse } from "../utils";
+import { APIResponse, logger } from "../utils";
 
 const { JWT_SECRET } = env;
 
 export const isAuthenticated = (isExpected: boolean) => {
     return async (request: Request, response: Response, next: NextFunction) => {
-        logger.info("[MIDDLEWARE] : isAuthenticated")
+        logger.info("[MIDDLEWARE] : isAuthenticated");
         const { accessToken } = request.cookies; // on récupére le cookie "accessToken" qui contient le JWT
         if (!accessToken) {
             // Si nous avons besoin de ne pas être identifié (ex: login, register,..)
@@ -34,8 +34,18 @@ export const isAuthenticated = (isExpected: boolean) => {
                 response.locals.user = decoded;
 
                 next();
-
             } catch (error: any) {
+                if (error.name === "TokenExpiredError") {
+                    logger.warn("Token expiré, suppression du cookie");
+                    response.clearCookie("accessToken");
+                    return APIResponse(
+                        response,
+                        null,
+                        "Session expirée, veuillez vous reconnecter",
+                        401,
+                    );
+                }
+
                 logger.error("Token invalide", error);
                 return APIResponse(response, null, "Token invalide", 401);
             }

@@ -120,16 +120,16 @@ export const suppliersController = {
 
             await suppliersModel.delete(id);
 
-            return APIResponse(response, null, "Utilisateur supprimé", 200);
+            return APIResponse(response, null, "Supplier supprimé", 200);
         } catch (error: any) {
             logger.error(
-                "Erreur lors de la suppression du utilisateur: ",
+                "Erreur lors de la suppression du supplier: ",
                 error,
             );
             APIResponse(
                 response,
                 null,
-                "Erreur lors de la suppression du utilisateur",
+                "Erreur lors de la suppression du supplier",
                 500,
             );
         }

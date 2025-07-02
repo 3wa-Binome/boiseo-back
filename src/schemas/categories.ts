@@ -9,5 +9,5 @@ export const categories = mysqlTable("categories", {
         .$defaultFn(() => randomUUID()),
     name: varchar("name", { length: 255 }).notNull(),
     createdAt: timestamp("created_at").defaultNow(),
-    userId: varchar("id", { length: 36 }).references(() => users.id, { onDelete: "cascade"}).notNull(),
+    userId: varchar("id_users", { length: 36 }).references(() => users.id, { onDelete: "cascade"}).notNull(),
 });

@@ -11,7 +11,7 @@ productsRouter.get("/categories/:id", isAuthenticated(true), isOwner(categories)
 
 productsRouter.get("/:id", isAuthenticated(true), isOwner(products), productsController.get);
 
-// productsRouter.get("/", productsController.getAll);
+productsRouter.get("/", productsController.getAll);
 
 productsRouter.post("/", isAuthenticated(true), productsController.create);
 

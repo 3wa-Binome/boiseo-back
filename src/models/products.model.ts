@@ -1,6 +1,12 @@
 import { db } from "../config/pool";
 import { logger } from "../utils";
-import { materials, products, productsMaterials } from "../schemas";
+import {
+    categories,
+    materials,
+    pictures,
+    products,
+    productsMaterials,
+} from "../schemas";
 import { NewProduct } from "../entities";
 import { eq, inArray } from "drizzle-orm";
 import { IMaterial } from "../types/materials.type";
@@ -8,41 +14,78 @@ import { IMaterial } from "../types/materials.type";
 export const productsModel = {
     getAll: async () => {
         try {
-            return await db.query.products.findMany({
+            const productsLists = await db.query.products.findMany({
                 columns: {
                     id: true,
                     name: true,
-                    quantity: true
-                },
-                with: {
-                    category: {
-                        columns: {
-                            id: true,
-                            name: true,
-                        },
-                    },
-                    productsMaterials: {
-                        columns: {
-                            id: true,
-                            quantity: true
-                        },
-                        with: {
-                            material: {
-                                columns: {
-                                    id: true,
-                                    name: true
-                                }
-                            }
-                        }
-                    },
-                    pictures: {
-                        columns: {
-                            id: true,
-                            src: true
-                        }
-                    }
+                    quantity: true,
+                    categoryId: true,
                 },
             });
+
+            const enrichedProducts = await Promise.all(
+                productsLists.map(async (product) => {
+                    // Récupérer la catégorie
+                    const category = product.categoryId
+                        ? await db.query.categories.findFirst({
+                            where: eq(categories.id, product.categoryId),
+                            columns: {
+                                id: true,
+                                name: true,
+                            },
+                        })
+                        : null;
+
+                    // Récupérer les liaisons productsMaterials
+                    const productsMaterialsList = await db.query
+                        .productsMaterials.findMany({
+                            where: eq(productsMaterials.productId, product.id),
+                            columns: {
+                                id: true,
+                                quantity: true,
+                                materialId: true,
+                            },
+                        });
+
+                    // Pour chaque liaison, récupérer le matériau
+                    const enrichedProductsMaterials = await Promise.all(
+                        productsMaterialsList.map(async (pm) => {
+                            const material = await db.query.materials.findFirst(
+                                {
+                                    where: eq(materials.id, pm.materialId),
+                                    columns: {
+                                        id: true,
+                                        name: true,
+                                    },
+                                },
+                            );
+
+                            return {
+                                ...pm,
+                                material,
+                            };
+                        }),
+                    );
+
+                    // Récupérer les images
+                    const picturesLists = await db.query.pictures.findMany({
+                        where: eq(pictures.productId, product.id),
+                        columns: {
+                            id: true,
+                            src: true,
+                        },
+                    });
+
+                    return {
+                        ...product,
+                        category,
+                        productsMaterials: enrichedProductsMaterials,
+                        picturesLists,
+                    };
+                }),
+            );
+
+            return enrichedProducts;
         } catch (error: any) {
             logger.error(
                 "Erreur lors de la récupération des products: ",
@@ -53,37 +96,78 @@ export const productsModel = {
     },
     get: async (id: string) => {
         try {
-            return await db.query.products.findFirst({
+            const product = await db.query.products.findFirst({
                 where: eq(products.id, id),
-                with: {
-                    category: {
+                columns: {
+                    id: true,
+                    name: true,
+                    quantity: true,
+                    categoryId: true,
+                },
+            });
+
+            if (!product) {
+                throw new Error("Produit introuvable");
+            }
+
+            // Récupérer la catégorie
+            const category = product.categoryId
+                ? await db.query.categories.findFirst({
+                    where: eq(categories.id, product.categoryId),
+                    columns: {
+                        id: true,
+                        name: true,
+                    },
+                })
+                : null;
+
+            // Récupérer les liaisons productsMaterials
+            const productsMaterialsList = await db.query.productsMaterials
+                .findMany({
+                    where: eq(productsMaterials.productId, product.id),
+                    columns: {
+                        id: true,
+                        quantity: true,
+                        materialId: true,
+                    },
+                });
+
+            // Pour chaque liaison, récupérer le matériau
+            const enrichedProductsMaterials = await Promise.all(
+                productsMaterialsList.map(async (pm) => {
+                    const material = await db.query.materials.findFirst({
+                        where: eq(materials.id, pm.materialId),
                         columns: {
                             id: true,
                             name: true,
                         },
-                    },
-                    productsMaterials: {
-                        columns: {
-                            id: true,
-                            quantity: true
-                        },
-                        with: {
-                            material: {
-                                columns: {
-                                    id: true,
-                                    name: true
-                                }
-                            }
-                        }
-                    },
-                    pictures: {
-                        columns: {
-                            id: true,
-                            src: true
-                        }
-                    }
+                    });
+
+                    return {
+                        ...pm,
+                        material,
+                    };
+                }),
+            );
+
+            // Récupérer les images
+            const picturesLists = await db.query.pictures.findMany({
+                where: eq(pictures.productId, product.id),
+                columns: {
+                    id: true,
+                    src: true,
                 },
             });
+
+            // Résultat final
+            const enrichedProduct = {
+                ...product,
+                category,
+                productsMaterials: enrichedProductsMaterials,
+                picturesLists,
+            };
+
+            return enrichedProduct;
         } catch (error: any) {
             logger.error("Erreur lors de la récupération du product: ", error);
             throw new Error("Impossible de récupérer le product");
@@ -91,42 +175,79 @@ export const productsModel = {
     },
     getAllByUser: async (userId: string) => {
         try {
-            return await db.query.products.findMany({
+            const productsList = await db.query.products.findMany({
+                where: eq(products.userId, userId),
                 columns: {
                     id: true,
                     name: true,
-                    quantity: true
-                },
-                where: eq(products.userId, userId),
-                with: {
-                    category: {
-                        columns: {
-                            id: true,
-                            name: true,
-                        },
-                    },
-                    productsMaterials: {
-                        columns: {
-                            id: true,
-                            quantity: true
-                        },
-                        with: {
-                            material: {
-                                columns: {
-                                    id: true,
-                                    name: true
-                                }
-                            }
-                        }
-                    },
-                    pictures: {
-                        columns: {
-                            id: true,
-                            src: true
-                        }
-                    }
+                    quantity: true,
+                    categoryId: true,
                 },
             });
+
+            const enrichedProducts = await Promise.all(
+                productsList.map(async (product) => {
+                    // Récupérer la catégorie
+                    const category = product.categoryId
+                        ? await db.query.categories.findFirst({
+                            where: eq(categories.id, product.categoryId),
+                            columns: {
+                                id: true,
+                                name: true,
+                            },
+                        })
+                        : null;
+
+                    // Récupérer les liaisons productsMaterials
+                    const productsMaterialsList = await db.query
+                        .productsMaterials.findMany({
+                            where: eq(productsMaterials.productId, product.id),
+                            columns: {
+                                id: true,
+                                quantity: true,
+                                materialId: true,
+                            },
+                        });
+
+                    // Pour chaque liaison, récupérer le matériau
+                    const enrichedProductsMaterials = await Promise.all(
+                        productsMaterialsList.map(async (pm) => {
+                            const material = await db.query.materials.findFirst(
+                                {
+                                    where: eq(materials.id, pm.materialId),
+                                    columns: {
+                                        id: true,
+                                        name: true,
+                                    },
+                                },
+                            );
+
+                            return {
+                                ...pm,
+                                material,
+                            };
+                        }),
+                    );
+
+                    // Récupérer les images
+                    const picturesLists = await db.query.pictures.findMany({
+                        where: eq(pictures.productId, product.id),
+                        columns: {
+                            id: true,
+                            src: true,
+                        },
+                    });
+
+                    return {
+                        ...product,
+                        category,
+                        productsMaterials: enrichedProductsMaterials,
+                        picturesLists,
+                    };
+                }),
+            );
+
+            return enrichedProducts;
         } catch (error: any) {
             logger.error(
                 `Impossible de récupérer les products de ${userId}: +`,
@@ -141,7 +262,7 @@ export const productsModel = {
                 columns: {
                     id: true,
                     name: true,
-                    quantity: true
+                    quantity: true,
                 },
                 where: eq(products.categoryId, categoryId),
                 with: {
@@ -154,23 +275,23 @@ export const productsModel = {
                     productsMaterials: {
                         columns: {
                             id: true,
-                            quantity: true
+                            quantity: true,
                         },
                         with: {
                             material: {
                                 columns: {
                                     id: true,
-                                    name: true
-                                }
-                            }
-                        }
+                                    name: true,
+                                },
+                            },
+                        },
                     },
                     pictures: {
                         columns: {
                             id: true,
-                            src: true
-                        }
-                    }
+                            src: true,
+                        },
+                    },
                 },
             });
         } catch (error: any) {
@@ -183,8 +304,9 @@ export const productsModel = {
     },
     create: async (product: NewProduct) => {
         try {
-            const [result] = await db.insert(products).values(product).$returningId();
-            return result
+            const [result] = await db.insert(products).values(product)
+                .$returningId();
+            return result;
         } catch (error: any) {
             logger.error("Erreur lors de la création du product: ", error);
             throw new Error("Impossible de créer le product");

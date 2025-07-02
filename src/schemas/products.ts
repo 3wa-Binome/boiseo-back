@@ -12,5 +12,5 @@ export const products = mysqlTable("products", {
     quantity: int("quantity").notNull().default(0),
     createdAt: timestamp("created_at").defaultNow(),
     userId: varchar("id_users", { length: 36 }).references(() => users.id, { onDelete: "cascade"}).notNull(),
-    categoryId: varchar("id_categories", { length: 36 }).references(() => categories.id, { onDelete: "set null"}),
+    categoryId: varchar("id_categories", { length: 36 }).references(() => categories.id, { onDelete: "restrict"}).notNull(),
 });
