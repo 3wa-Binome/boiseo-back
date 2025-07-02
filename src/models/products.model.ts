@@ -1,10 +1,9 @@
 import { db } from "../config/pool";
 import { logger } from "../utils";
-import { materials, products } from "../schemas";
+import { materials, products, productsMaterials } from "../schemas";
 import { NewProduct } from "../entities";
 import { eq, inArray } from "drizzle-orm";
 import { IMaterial } from "../types/materials.type";
-import { productsMaterials } from "../schemas/productsMaterials";
 
 export const productsModel = {
     getAll: async () => {
