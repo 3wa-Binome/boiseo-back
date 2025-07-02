@@ -7,7 +7,7 @@ const productsRouter = Router();
 
 productsRouter.get("/user/:id", isAuthenticated(true), isOwner(users), productsController.getAllByUser);
 
-productsRouter.get("/categories/:id", isAuthenticated(true), isOwner(categories), productsController.getAllByCategory);
+productsRouter.get("/categorie/:id", isAuthenticated(true), isOwner(categories), productsController.getAllByCategory);
 
 productsRouter.get("/:id", isAuthenticated(true), isOwner(products), productsController.get);
 
