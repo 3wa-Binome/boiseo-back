@@ -102,9 +102,9 @@ export const usersModel = {
                     return {
                         ...user,
                         categories: enrichedCategories,
-                        picturesLists,
+                        pictures: picturesLists,
                         materials: enrichedMaterials,
-                        suppliersLists,
+                        suppliers: suppliersLists,
                     };
                 }),
             );
@@ -153,7 +153,7 @@ export const usersModel = {
 
                     return {
                         ...category,
-                        products,
+                        productsLists,
                         productCount: productsLists.length,
                     };
                 }),
@@ -210,9 +210,9 @@ export const usersModel = {
             const enrichedUser = {
                 ...user,
                 categories: enrichedCategories,
-                picturesLists,
+                pictures: picturesLists,
                 materials: enrichedMaterials,
-                suppliersLists,
+                suppliers: suppliersLists,
             };
 
             return enrichedUser;

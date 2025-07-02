@@ -30,7 +30,7 @@ export const categoriesModel = {
 
                     return {
                         ...category,
-                        productsLists,
+                        products: productsLists,
                         productCount: productsLists.length,
                         productMadeCount: productsLists.reduce(
                             (total, product) => total + (product.quantity ?? 0),
@@ -78,7 +78,7 @@ export const categoriesModel = {
             // Étape 3 : enrichir la catégorie avec les produits
             return {
                 ...category,
-                productsLists,
+                products: productsLists,
                 productCount: productsLists.length,
                 productMadeCount: productsLists.reduce(
                     (total, product) => total + (product.quantity ?? 0),
@@ -117,7 +117,7 @@ export const categoriesModel = {
 
                     return {
                         ...category,
-                        productsLists,
+                        products: productsLists,
                         productCount: productsLists.length,
                         productMadeCount: productsLists.reduce(
                             (total, product) => total + (product.quantity ?? 0),

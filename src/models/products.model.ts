@@ -80,7 +80,7 @@ export const productsModel = {
                         ...product,
                         category,
                         productsMaterials: enrichedProductsMaterials,
-                        picturesLists,
+                        pictures: picturesLists,
                     };
                 }),
             );
@@ -164,7 +164,7 @@ export const productsModel = {
                 ...product,
                 category,
                 productsMaterials: enrichedProductsMaterials,
-                picturesLists,
+                pictures: picturesLists,
             };
 
             return enrichedProduct;
@@ -242,7 +242,7 @@ export const productsModel = {
                         ...product,
                         category,
                         productsMaterials: enrichedProductsMaterials,
-                        picturesLists,
+                        pictures: picturesLists,
                     };
                 }),
             );
@@ -258,42 +258,79 @@ export const productsModel = {
     },
     getAllByCategory: async (categoryId: string) => {
         try {
-            return await db.query.products.findMany({
+            const productsList = await db.query.products.findMany({
+                where: eq(products.categoryId, categoryId),
                 columns: {
                     id: true,
                     name: true,
                     quantity: true,
+                    categoryId: true,
                 },
-                where: eq(products.categoryId, categoryId),
-                with: {
-                    category: {
-                        columns: {
-                            id: true,
-                            name: true,
-                        },
-                    },
-                    productsMaterials: {
-                        columns: {
-                            id: true,
-                            quantity: true,
-                        },
-                        with: {
-                            material: {
-                                columns: {
-                                    id: true,
-                                    name: true,
-                                },
+            });
+
+            const enrichedProducts = await Promise.all(
+                productsList.map(async (product) => {
+                    // Récupérer la catégorie
+                    const category = product.categoryId
+                        ? await db.query.categories.findFirst({
+                            where: eq(categories.id, product.categoryId),
+                            columns: {
+                                id: true,
+                                name: true,
                             },
-                        },
-                    },
-                    pictures: {
+                        })
+                        : null;
+
+                    // Récupérer les liaisons productsMaterials
+                    const productsMaterialsList = await db.query
+                        .productsMaterials.findMany({
+                            where: eq(productsMaterials.productId, product.id),
+                            columns: {
+                                id: true,
+                                quantity: true,
+                                materialId: true,
+                            },
+                        });
+
+                    // Pour chaque liaison, récupérer le matériau
+                    const enrichedProductsMaterials = await Promise.all(
+                        productsMaterialsList.map(async (pm) => {
+                            const material = await db.query.materials.findFirst(
+                                {
+                                    where: eq(materials.id, pm.materialId),
+                                    columns: {
+                                        id: true,
+                                        name: true,
+                                    },
+                                },
+                            );
+
+                            return {
+                                ...pm,
+                                material,
+                            };
+                        }),
+                    );
+
+                    // Récupérer les images
+                    const picturesLists = await db.query.pictures.findMany({
+                        where: eq(pictures.productId, product.id),
                         columns: {
                             id: true,
                             src: true,
                         },
-                    },
-                },
-            });
+                    });
+
+                    return {
+                        ...product,
+                        category,
+                        productsMaterials: enrichedProductsMaterials,
+                        pictures: picturesLists,
+                    };
+                }),
+            );
+
+            return enrichedProducts;
         } catch (error: any) {
             logger.error(
                 `Impossible de récupérer les products de ${categoryId}: +`,
