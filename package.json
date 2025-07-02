@@ -15,7 +15,7 @@
   "type": "commonjs",
   "main": "server.ts",
   "scripts": {
-    "build" : "tsc",
+    "build": "tsc",
     "start": "node dist/server.js",
     "dev": "concurrently \"tsc --watch\" \"tsnd --respawn src/server.ts\"",
     "generate": "drizzle-kit generate --config=src/config/drizzle.ts",
