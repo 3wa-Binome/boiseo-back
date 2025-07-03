@@ -63,7 +63,7 @@ export const usersController = {
             const [emailAlreadyExists] = await usersModel.findByCredentials(
                 email,
             );
-            if (emailAlreadyExists) {
+            if (emailAlreadyExists && emailAlreadyExists.id !== id) {
                 logger.error("Cette adresse email est déjà utilisée");
                 return APIResponse(
                     response,
