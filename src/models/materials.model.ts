@@ -106,6 +106,7 @@ export const materialsModel = {
                 columns: {
                     id: true,
                     name: true,
+                    description: true,
                     supplierId: true,
                 },
             });
