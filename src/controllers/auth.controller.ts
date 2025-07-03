@@ -27,15 +27,17 @@ export const authController = {
                 return APIResponse(response, null, "Les identifiants saisis sont incorrects", 400);
             // En dessous, on admet que le mot de passe saisit est le bon !
 
+            const userTokenData = { id: user.id, name: user.name }
+
             // generation du jwt
-            const accessToken = jwt.sign({ id: user.id, name: user.name }, JWT_SECRET, { expiresIn: '1h' })
+            const accessToken = jwt.sign(userTokenData, JWT_SECRET, { expiresIn: '1h' })
 
             response.cookie('accessToken', accessToken, {
                 httpOnly: true, // true - cookie réservé uniquement pour communication HTTP - pas accessible en js
                 sameSite: 'strict', // protection CSRF
                 secure: NODE_ENV === "production" // le cookie ne sera envoyé que sur du HTTPS uniquement en prod
             });
-            APIResponse(response, null, "Vous êtes bien connecté", 200);
+            APIResponse(response, userTokenData, "Vous êtes bien connecté", 200);
         } catch (error: any) {
             logger.error("Erreur lors de la connexion de l'utilisateur:", error);
             APIResponse(response, null, "Erreur serveur", 500);
@@ -81,4 +83,8 @@ export const authController = {
         response.clearCookie("accessToken");
         APIResponse(response, null, "Vous êtes déconnecté", 200);
     },
+    checkConnexion : (request: Request, response: Response) => {
+        const { user } = response.locals;
+        APIResponse(response, user, "Vous êtes bien connectée", 200);
+    }
 }
