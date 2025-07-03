@@ -35,7 +35,7 @@ export const authController = {
             response.cookie('accessToken', accessToken, {
                 httpOnly: true, // true - cookie réservé uniquement pour communication HTTP - pas accessible en js
                 sameSite: 'none', // protection CSRF
-                secure: NODE_ENV === "production" // le cookie ne sera envoyé que sur du HTTPS uniquement en prod
+                secure: NODE_ENV === "production" || NODE_ENV === "development" // le cookie ne sera envoyé que sur du HTTPS uniquement en prod
             });
             APIResponse(response, userTokenData, "Vous êtes bien connecté", 200);
         } catch (error: any) {
