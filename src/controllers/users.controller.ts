@@ -74,8 +74,9 @@ export const usersController = {
             }
 
             // On hash le mot de passe en clair du formulaire
-            const hash = await hashPassword(password);
-            if (!hash) {
+
+            const hash = password && await hashPassword(password);
+            if (password && !hash) {
                 logger.error("Un problème est survenu lors du hash");
                 return APIResponse(
                     response,
@@ -86,11 +87,16 @@ export const usersController = {
             }
 
             // On ajoute le new user dans la db avec le mdp hashé
-            const [updatedUser] = await usersModel.update(id, {
-                name,
-                email,
-                password: hash,
-            });
+            const [updatedUser] = password
+                ? await usersModel.update(id, {
+                    name,
+                    email,
+                    password: hash,
+                })
+                : await usersModel.update(id, {
+                    name,
+                    email,
+                });
             if (!updatedUser) {
                 logger.error("Un problème est survenu lors de la création");
                 return APIResponse(
