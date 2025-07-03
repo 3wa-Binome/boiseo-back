@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { APIResponse, hashPassword, logger, verifyPassword } from "../utils";
 import { usersModel } from "../models";
 import z from "zod";
-import { userRegisterValidation } from "../validations";
+import { userRegisterValidation, userUpdateValidation } from "../validations";
 
 export const usersController = {
     getAll: async (request: Request, response: Response) => {
@@ -55,7 +55,7 @@ export const usersController = {
                 return APIResponse(response, null, "User inexistant", 404);
             }
 
-            const { name, email, password } = userRegisterValidation.parse(
+            const { name, email, password } = userUpdateValidation.parse(
                 request.body,
             );
 
