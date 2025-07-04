@@ -139,8 +139,9 @@ export const authController = {
         });
         APIResponse(response, null, "Vous êtes déconnecté", 200);
     },
-    checkConnexion: (request: Request, response: Response) => {
+    checkConnexion: async (request: Request, response: Response) => {
         const { user } = response.locals;
-        APIResponse(response, user, "Vous êtes bien connectée", 200);
+        const { id, name, email } = await usersModel.get(user.id)
+        APIResponse(response, {id, name, email}, "Vous êtes bien connectée", 200);
     },
 };
