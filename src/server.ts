@@ -10,7 +10,7 @@ const app = express();
 const { PORT, ORIGIN } = env;
 
 app.use(cors({
-    origin: ORIGIN, // Autoriser UNIQUEMENT cette adresse à requêter sur mon serv
+    origin: "'https://3wa-binome.github.io", //ORIGIN, // Autoriser UNIQUEMENT cette adresse à requêter sur mon serv
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // Méthodes HTTPS autorisées (les autres seront bloquées)
     credentials: true
 }));
