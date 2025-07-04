@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env";
 import { APIResponse, logger } from "../utils";
 
-const { JWT_SECRET } = env;
+const { JWT_SECRET, NODE_ENV } = env;
 
 export const isAuthenticated = (isExpected: boolean) => {
     return async (request: Request, response: Response, next: NextFunction) => {
@@ -37,7 +37,12 @@ export const isAuthenticated = (isExpected: boolean) => {
             } catch (error: any) {
                 if (error.name === "TokenExpiredError") {
                     logger.warn("Token expiré, suppression du cookie");
-                    response.clearCookie("accessToken");
+                    response.clearCookie("accessToken", {
+                        httpOnly: true,
+                        sameSite: "none",
+                        secure: NODE_ENV === "production" ||
+                            NODE_ENV === "development",
+                    });
                     return APIResponse(
                         response,
                         null,
